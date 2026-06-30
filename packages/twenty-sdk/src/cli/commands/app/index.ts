@@ -18,12 +18,17 @@ export const registerAppCommands = (program: Command): void => {
       'Publish to a specific remote (with --private)',
     )
     .option('--tag <tag>', 'npm dist-tag (e.g. beta, next)')
+    .option(
+      '--skip-build',
+      'Reuse the prebuilt .twenty/output tarball instead of rebuilding (with --private)',
+    )
     .action(async (appPath, options) => {
       await deployCommand.execute({
         appPath: formatPath(appPath),
         private: options.private,
         remote: options.remote,
         tag: options.tag,
+        skipBuild: options.skipBuild,
       });
     });
 
