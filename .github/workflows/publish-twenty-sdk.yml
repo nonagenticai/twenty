@@ -1,0 +1,74 @@
+# nonagenticai/twenty fork — builds and publishes our patched twenty-sdk to the
+# internal Verdaccio registry as @nonagentic/twenty-sdk.
+#
+# Why this fork exists: stock twenty-sdk's `app:publish --private` rebuilds the
+# whole app at deploy time (~4.3Gi RSS). Our patch adds `--skip-build` so growth's
+# reconcile reuses the baked tarball. We keep the workspace package name `twenty-sdk`
+# (so the 611 in-monorepo consumers stay intact) but PUBLISH under the @nonagentic
+# scope, because Verdaccio only permits publishing to `@nonagentic/*` (the `**`
+# namespace is read-only/proxy). growth consumes it via an npm alias
+# ("twenty-sdk": "npm:@nonagentic/twenty-sdk@<ver>") — no import renames needed.
+#
+# Publishing to @nonagentic/* needs no real credential (Verdaccio access/publish =
+# $all for that scope); npm only requires *some* _authToken to be present, so a
+# placeholder works. If a real NPM_TOKEN secret is set it is used instead.
+name: publish-twenty-sdk
+
+on:
+  workflow_dispatch: {}
+  push:
+    branches: [rmt/twenty-sdk-skip-build]
+    paths:
+      - 'packages/twenty-sdk/**'
+      - '.github/workflows/publish-twenty-sdk.yml'
+
+concurrency:
+  group: publish-twenty-sdk
+  cancel-in-progress: false
+
+jobs:
+  build-publish:
+    runs-on: arc-amd64
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node (pinned via .nvmrc = 24.5.0)
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+
+      - name: Enable corepack (yarn 4.13.0)
+        run: corepack enable
+
+      # Full monorepo install is required: twenty-sdk's build depends on its
+      # ^build chain (twenty-client-sdk / twenty-shared / twenty-ui) and twenty-ui
+      # needs its full peer set (monaco-editor, storybook). A focused install is
+      # insufficient. Fetch is ~2.2GiB; ensure the runner has disk headroom.
+      - name: Install dependencies
+        run: yarn install --inline-builds
+
+      - name: Build twenty-sdk
+        run: yarn nx build twenty-sdk --skip-nx-cache
+
+      - name: Publish @nonagentic/twenty-sdk to npm.internal
+        working-directory: packages/twenty-sdk
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN || 'anonymous-publish' }}
+        run: |
+          set -euo pipefail
+          # Publish under the @nonagentic scope without touching the workspace name
+          # (the source keeps name "twenty-sdk" so monorepo consumers resolve).
+          node -e "const p=require('./package.json'); p.name='@nonagentic/twenty-sdk'; require('fs').writeFileSync('./package.json', JSON.stringify(p,null,2)+'\n');"
+          VERSION=$(node -p "require('./package.json').version")
+          echo "Publishing @nonagentic/twenty-sdk@${VERSION}"
+          # Project-scoped npm config (ARC runner HOME is read-only).
+          npm config set --location=project strict-ssl false
+          npm config set --location=project //npm.internal/:_authToken "${NPM_TOKEN}"
+          # Republish-safe: same version overwrite (Verdaccio allows for @nonagentic/*).
+          npm unpublish "@nonagentic/twenty-sdk@${VERSION}" --force --registry https://npm.internal/ 2>/dev/null || true
+          # yarn npm publish converts workspace: deps to concrete versions.
+          YARN_NPM_PUBLISH_REGISTRY=https://npm.internal/ \
+          YARN_NPM_AUTH_TOKEN="${NPM_TOKEN}" \
+          YARN_ENABLE_STRICT_SSL=false \
+          YARN_UNSAFE_HTTP_WHITELIST=npm.internal \
+          yarn npm publish --tag rmt
