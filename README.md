@@ -1,3 +1,31 @@
+<!-- ────────────────────────────────────────────────────────────────────────── -->
+<!-- nonagenticai FORK NOTES — do not delete on upstream sync                    -->
+<!-- ────────────────────────────────────────────────────────────────────────── -->
+
+> ## 🔱 nonagenticai fork
+>
+> This is our fork of Twenty (`nonagenticai/twenty`, remote `nona`; personal fork `georgiedekker/twenty`; upstream `twentyhq/twenty` is `origin`). We deploy it self-hosted on the strato cluster (namespace `twenty`, one `twenty-server` + `twenty-worker` + own `twenty-db`, `IS_MULTIWORKSPACE_ENABLED=true`). Workspaces are addressed by per-workspace **custom domain** — e.g. the **Merqi** workspace is served at `https://twenty.merqi.nl`.
+>
+> ### Divergence from upstream
+>
+> **Keycloak workspace SSO (OIDC) — enterprise gate opened.** Twenty v2.9.0 guards the OIDC SSO auth routes with `EnterpriseFeaturesEnabledGuard` → `EnterprisePlanService.isValid()`, which requires a paid, Twenty-signed `ENTERPRISE_KEY`. We run Keycloak-backed SSO on our own instance, so the single patch (`packages/twenty-server/src/engine/core-modules/enterprise/services/enterprise-plan.service.ts`, `isValid(): return true`) opens that gate. Branch `feat/self-hosted-sso-enterprise-gate` off tag `v2.9.0` — PR #2. **Do not merge into `main`** (main tracks upstream for clean syncs).
+>
+> ### How it's built & deployed
+>
+> - **Image:** `registry.internal:5000/twenty:v2.9.0-sso1` — a thin overlay built on worker1 (`FROM …/twenty:v2.9.0` + `sed` the compiled `isValid()` → `return true`). A full source rebuild uses `packages/twenty-docker/twenty/Dockerfile` target `twenty`.
+> - **Deploy:** gitops-production `clusters/strato/services/twenty/deployment.yaml` pinned to `:v2.9.0-sso1` (PR #1767), reconciled by Flux. Flux reverts live `kubectl set image` — always change the image via gitops.
+>
+> ### SSO wiring (Keycloak + Twenty)
+>
+> - **Keycloak:** confidential OIDC client `twenty-merqi` in the **`portal`** realm (`https://auth.nonagentic.ai/realms/portal`); redirect URIs `https://twenty.nonagentic.ai/auth/oidc/callback` + `https://twenty.merqi.nl/auth/oidc/callback`; scopes `openid email profile`. Live-provisioned via kcadm; DR/parity entry in gitops `keycloak/realm-portal-configmap.yaml` (PR #1768).
+> - **Twenty (Merqi workspace):** `core.featureFlag` `IS_SSO_ENABLED=true`; a `core.workspaceSSOIdentityProvider` OIDC row (issuer = the portal realm URL); `core.approvedAccessDomain` `nonagentic.ai` (validated) so portal users on that domain JIT-provision on first SSO login. The OIDC callback is built from `SERVER_URL` (`https://twenty.nonagentic.ai`) then hands off to the workspace custom domain for `/verify`.
+>
+> ### Verify
+>
+> `https://twenty.merqi.nl` → **Single sign-on (SSO)** → Keycloak `portal` login → callback → land in the Merqi workspace. Use the sanctioned super-admin test user **`fr-test`** (portal realm).
+
+<!-- ─────────────────────────── end nonagenticai fork notes ────────────────── -->
+
 <p align="center">
   <a href="https://www.twenty.com">
     <img src="./packages/twenty-website/public/images/core/logo.svg" width="100px" alt="Twenty logo" />

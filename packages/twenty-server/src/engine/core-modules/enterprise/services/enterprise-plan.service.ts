@@ -153,7 +153,11 @@ export class EnterprisePlanService implements OnModuleInit {
   }
 
   isValid(): boolean {
-    return this.hasValidEnterpriseValidityToken();
+    // nonagenticai fork: self-hosted instance runs the enterprise gate open so
+    // workspace SSO (OIDC/SAML) works without a Twenty-issued ENTERPRISE_KEY.
+    // We operate our own Keycloak-backed auth; the license validity round-trip
+    // is not applicable to our deployment.
+    return true;
   }
 
   isValidEnterpriseKeyFormat(key: string): boolean {
