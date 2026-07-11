@@ -141,6 +141,45 @@ export class AdminPanelUserLookupService {
     };
   }
 
+  // Resolves the core UserWorkspace row for a member email within a given workspace.
+  // Roles attach to this UserWorkspace id (not the workspace-schema WorkspaceMember).
+  async getUserWorkspaceForMemberEmailOrThrow({
+    workspaceId,
+    email,
+  }: {
+    workspaceId: string;
+    email: string;
+  }): Promise<UserWorkspaceEntity> {
+    const normalizedEmail = email.toLowerCase();
+
+    const user = await this.userRepository.findOne({
+      where: { email: normalizedEmail },
+    });
+
+    userValidator.assertIsDefinedOrThrow(
+      user,
+      new AuthException('User not found', AuthExceptionCode.INVALID_INPUT, {
+        userFriendlyMessage: msg`User not found. Please check the email.`,
+      }),
+    );
+
+    const userWorkspace = await this.userWorkspaceRepository.findOne({
+      where: { userId: user.id, workspaceId },
+    });
+
+    if (!isDefined(userWorkspace)) {
+      throw new AuthException(
+        'User is not a member of the workspace',
+        AuthExceptionCode.INVALID_INPUT,
+        {
+          userFriendlyMessage: msg`This user is not a member of the workspace.`,
+        },
+      );
+    }
+
+    return userWorkspace;
+  }
+
   async workspaceLookup(workspaceId: string): Promise<UserLookup> {
     const workspace = await this.workspaceRepository.findOne({
       where: { id: workspaceId },

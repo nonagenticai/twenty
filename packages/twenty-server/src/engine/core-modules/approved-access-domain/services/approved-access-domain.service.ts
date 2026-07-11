@@ -298,6 +298,40 @@ export class ApprovedAccessDomainService {
     return this.approvedAccessDomainRepository.find(workspace.id);
   }
 
+  // Admin-only cross-workspace upsert used by the external admin server (no email round-trip).
+  // Trusts the caller: the domain is marked validated immediately. Idempotent.
+  // _email is retained for signature parity with the email-driven create flow; the admin
+  // path bypasses email validation entirely.
+  async adminEnsureValidatedApprovedAccessDomain(
+    workspaceId: string,
+    domain: string,
+    _email: string,
+  ): Promise<ApprovedAccessDomainEntity> {
+    const existing = await this.approvedAccessDomainRepositoryUnscoped.findOneBy(
+      {
+        workspaceId,
+        domain,
+      },
+    );
+
+    if (isDefined(existing)) {
+      if (existing.isValidated) {
+        return existing;
+      }
+
+      return this.approvedAccessDomainRepositoryUnscoped.save({
+        ...existing,
+        isValidated: true,
+      });
+    }
+
+    return this.approvedAccessDomainRepositoryUnscoped.save({
+      workspaceId,
+      domain,
+      isValidated: true,
+    });
+  }
+
   async findValidatedApprovedAccessDomainWithWorkspacesAndSSOIdentityProvidersDomain(
     domain: string,
   ) {

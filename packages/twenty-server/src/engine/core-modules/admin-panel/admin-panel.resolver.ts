@@ -15,6 +15,7 @@ import { UpgradeStatusService } from 'src/engine/core-modules/upgrade/services/u
 import { AdminResolver } from 'src/engine/api/graphql/graphql-config/decorators/admin-resolver.decorator';
 import { AdminPanelHealthService } from 'src/engine/core-modules/admin-panel/admin-panel-health.service';
 import { AdminPanelQueueService } from 'src/engine/core-modules/admin-panel/admin-panel-queue.service';
+import { AdminPanelService } from 'src/engine/core-modules/admin-panel/admin-panel.service';
 import { AdminChatThreadMessagesDTO } from 'src/engine/core-modules/admin-panel/dtos/admin-chat-thread-messages.dto';
 import { AdminPanelRecentUserDTO } from 'src/engine/core-modules/admin-panel/dtos/admin-panel-recent-user.dto';
 import { AdminPanelTopWorkspaceDTO } from 'src/engine/core-modules/admin-panel/dtos/admin-panel-top-workspace.dto';
@@ -49,6 +50,8 @@ import { ApplicationRegistrationVariableService } from 'src/engine/core-modules/
 import { UpdateApplicationRegistrationVariableInput } from 'src/engine/core-modules/application/application-registration-variable/dtos/update-application-registration-variable.input';
 import { ApplicationRegistrationEntity } from 'src/engine/core-modules/application/application-registration/application-registration.entity';
 import { ApplicationRegistrationService } from 'src/engine/core-modules/application/application-registration/application-registration.service';
+import { ApprovedAccessDomainDTO } from 'src/engine/core-modules/approved-access-domain/dtos/approved-access-domain.dto';
+import { ApprovedAccessDomainService } from 'src/engine/core-modules/approved-access-domain/services/approved-access-domain.service';
 import { AuthGraphqlApiExceptionFilter } from 'src/engine/core-modules/auth/filters/auth-graphql-api-exception.filter';
 import { AdminAiModelsDTO } from 'src/engine/core-modules/client-config/client-config.entity';
 import { FeatureFlagException } from 'src/engine/core-modules/feature-flag/feature-flag.exception';
@@ -119,6 +122,8 @@ export class AdminPanelResolver {
     private readonly usageAnalyticsService: UsageAnalyticsService,
     private readonly maintenanceModeService: MaintenanceModeService,
     private readonly upgradeStatusService: UpgradeStatusService,
+    private readonly adminPanelService: AdminPanelService,
+    private readonly approvedAccessDomainService: ApprovedAccessDomainService,
     @InjectRepository(WorkspaceEntity)
     private readonly workspaceRepository: Repository<WorkspaceEntity>,
   ) {}
@@ -179,6 +184,32 @@ export class AdminPanelResolver {
 
       throw error;
     }
+  }
+
+  @UseGuards(AdminPanelGuard)
+  @Mutation(() => ApprovedAccessDomainDTO)
+  async adminEnsureValidatedApprovedAccessDomain(
+    @Args('workspaceId', { type: () => UUIDScalarType }) workspaceId: string,
+    @Args('domain', { type: () => String }) domain: string,
+    @Args('email', { type: () => String }) email: string,
+  ): Promise<ApprovedAccessDomainDTO> {
+    return this.approvedAccessDomainService.adminEnsureValidatedApprovedAccessDomain(
+      workspaceId,
+      domain,
+      email,
+    );
+  }
+
+  @UseGuards(AdminPanelGuard)
+  @Mutation(() => Boolean)
+  async adminPromoteWorkspaceMemberToAdmin(
+    @Args('workspaceId', { type: () => UUIDScalarType }) workspaceId: string,
+    @Args('memberEmail', { type: () => String }) memberEmail: string,
+  ): Promise<boolean> {
+    return this.adminPanelService.adminPromoteWorkspaceMemberToAdmin(
+      workspaceId,
+      memberEmail,
+    );
   }
 
   @UseGuards(AdminPanelGuard)
