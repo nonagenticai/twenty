@@ -4,15 +4,18 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 
 import { Issuer } from 'openid-client';
+import { isDefined } from 'twenty-shared/utils';
 import { Repository } from 'typeorm';
 
 import {
   WorkspaceSSOIdentityProviderEntity,
   IdentityProviderType,
   OIDCResponseType,
+  SSOIdentityProviderStatus,
 } from 'src/engine/core-modules/sso/workspace-sso-identity-provider.entity';
 import { BillingEntitlementKey } from 'src/engine/core-modules/billing/enums/billing-entitlement-key.enum';
 import { BillingService } from 'src/engine/core-modules/billing/services/billing.service';
+import { type SetupSsoDTO } from 'src/engine/core-modules/sso/dtos/setup-sso.dto';
 import { ExceptionHandlerService } from 'src/engine/core-modules/exception-handler/exception-handler.service';
 import {
   SSOException,
@@ -102,6 +105,49 @@ export class SSOService {
         SSOExceptionCode.UNKNOWN_SSO_CONFIGURATION_ERROR,
       );
     }
+  }
+
+  // Cross-workspace admin binding: idempotent upsert of an OIDC IdP keyed by
+  // (workspaceId, issuer). Skips the billing entitlement gate and OIDC discovery
+  // on purpose — the admin panel provisions SSO out-of-band.
+  async adminEnsureWorkspaceSSOIdentityProvider(
+    workspaceId: string,
+    data: Pick<
+      WorkspaceSSOIdentityProviderEntity,
+      'issuer' | 'clientID' | 'clientSecret' | 'name'
+    >,
+  ): Promise<SetupSsoDTO> {
+    const existing = await this.workspaceSSOIdentityProviderRepository.findOne({
+      where: { workspaceId, issuer: data.issuer },
+    });
+
+    const saved = await this.workspaceSSOIdentityProviderRepository.save(
+      isDefined(existing)
+        ? {
+            ...existing,
+            clientID: data.clientID,
+            clientSecret: data.clientSecret,
+            name: data.name,
+            status: SSOIdentityProviderStatus.Active,
+          }
+        : {
+            type: IdentityProviderType.OIDC,
+            issuer: data.issuer,
+            clientID: data.clientID,
+            clientSecret: data.clientSecret,
+            name: data.name,
+            workspaceId,
+            status: SSOIdentityProviderStatus.Active,
+          },
+    );
+
+    return {
+      id: saved.id,
+      type: saved.type,
+      issuer: saved.issuer,
+      name: saved.name,
+      status: saved.status,
+    };
   }
 
   async createSAMLIdentityProvider(

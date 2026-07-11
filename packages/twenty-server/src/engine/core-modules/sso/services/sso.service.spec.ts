@@ -128,6 +128,103 @@ describe('SSOService', () => {
     });
   });
 
+  describe('adminEnsureWorkspaceSSOIdentityProvider', () => {
+    const workspaceId = 'workspace-123';
+    const data = {
+      issuer: 'https://example.com',
+      clientID: 'client-id',
+      clientSecret: 'client-secret',
+      name: 'Test Provider',
+    };
+
+    it('should insert a new OIDC identity provider when none exists', async () => {
+      const mockSavedProvider = {
+        id: 'provider-123',
+        type: 'OIDC',
+        name: 'Test Provider',
+        status: 'Active',
+        issuer: 'https://example.com',
+        clientID: 'client-id',
+        clientSecret: 'client-secret',
+      };
+
+      jest.spyOn(repository, 'findOne').mockResolvedValue(null);
+      const saveSpy = jest
+        .spyOn(repository, 'save')
+        .mockResolvedValue(mockSavedProvider as any);
+
+      const result = await service.adminEnsureWorkspaceSSOIdentityProvider(
+        workspaceId,
+        data,
+      );
+
+      expect(repository.findOne).toHaveBeenCalledWith({
+        where: { workspaceId, issuer: data.issuer },
+      });
+      expect(saveSpy).toHaveBeenCalledWith({
+        type: 'OIDC',
+        issuer: 'https://example.com',
+        clientID: 'client-id',
+        clientSecret: 'client-secret',
+        name: 'Test Provider',
+        workspaceId,
+        status: 'Active',
+      });
+      expect(result).toEqual({
+        id: 'provider-123',
+        type: 'OIDC',
+        issuer: 'https://example.com',
+        name: 'Test Provider',
+        status: 'Active',
+      });
+      // clientSecret must never leak through the DTO
+      expect(result).not.toHaveProperty('clientSecret');
+    });
+
+    it('should merge into an existing identity provider and keep its id', async () => {
+      const existingProvider = {
+        id: 'provider-existing',
+        type: 'OIDC',
+        issuer: 'https://example.com',
+        clientID: 'old-client-id',
+        clientSecret: 'old-client-secret',
+        name: 'Old Provider',
+        status: 'Inactive',
+        workspaceId,
+      };
+
+      jest
+        .spyOn(repository, 'findOne')
+        .mockResolvedValue(existingProvider as any);
+      const saveSpy = jest
+        .spyOn(repository, 'save')
+        .mockImplementation(async (entity) => entity as any);
+
+      const result = await service.adminEnsureWorkspaceSSOIdentityProvider(
+        workspaceId,
+        data,
+      );
+
+      expect(saveSpy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          id: 'provider-existing',
+          clientID: 'client-id',
+          clientSecret: 'client-secret',
+          name: 'Test Provider',
+          status: 'Active',
+        }),
+      );
+      expect(result).toEqual({
+        id: 'provider-existing',
+        type: 'OIDC',
+        issuer: 'https://example.com',
+        name: 'Test Provider',
+        status: 'Active',
+      });
+      expect(result).not.toHaveProperty('clientSecret');
+    });
+  });
+
   describe('deleteSSOIdentityProvider', () => {
     it('should delete the identity provider successfully', async () => {
       const identityProviderId = 'provider-123';

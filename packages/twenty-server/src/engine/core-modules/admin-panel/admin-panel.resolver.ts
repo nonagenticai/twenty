@@ -60,6 +60,8 @@ import { PreventNestToAutoLogGraphqlErrorsFilter } from 'src/engine/core-modules
 import { ResolverValidationPipe } from 'src/engine/core-modules/graphql/pipes/resolver-validation.pipe';
 import { UserInputError } from 'src/engine/core-modules/graphql/utils/graphql-errors.util';
 import { type MessageQueue } from 'src/engine/core-modules/message-queue/message-queue.constants';
+import { SetupSsoDTO } from 'src/engine/core-modules/sso/dtos/setup-sso.dto';
+import { SSOService } from 'src/engine/core-modules/sso/services/sso.service';
 import { type ConfigVariables } from 'src/engine/core-modules/twenty-config/config-variables';
 import { ConfigVariableGraphqlApiExceptionFilter } from 'src/engine/core-modules/twenty-config/filters/config-variable-graphql-api-exception.filter';
 import { TwentyConfigService } from 'src/engine/core-modules/twenty-config/twenty-config.service';
@@ -124,6 +126,7 @@ export class AdminPanelResolver {
     private readonly upgradeStatusService: UpgradeStatusService,
     private readonly adminPanelService: AdminPanelService,
     private readonly approvedAccessDomainService: ApprovedAccessDomainService,
+    private readonly ssoService: SSOService,
     @InjectRepository(WorkspaceEntity)
     private readonly workspaceRepository: Repository<WorkspaceEntity>,
   ) {}
@@ -210,6 +213,23 @@ export class AdminPanelResolver {
       workspaceId,
       memberEmail,
     );
+  }
+
+  @UseGuards(AdminPanelGuard)
+  @Mutation(() => SetupSsoDTO)
+  async adminEnsureWorkspaceSSOIdentityProvider(
+    @Args('workspaceId', { type: () => UUIDScalarType }) workspaceId: string,
+    @Args('issuer') issuer: string,
+    @Args('clientID') clientID: string,
+    @Args('clientSecret') clientSecret: string,
+    @Args('name') name: string,
+  ): Promise<SetupSsoDTO> {
+    return this.ssoService.adminEnsureWorkspaceSSOIdentityProvider(workspaceId, {
+      issuer,
+      clientID,
+      clientSecret,
+      name,
+    });
   }
 
   @UseGuards(AdminPanelGuard)
