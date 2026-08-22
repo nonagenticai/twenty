@@ -16,11 +16,13 @@ concurrency:
 
 jobs:
   e2e-test:
+    # Fork guard: upstream product E2E, measured flaky here. See FORK-CI.md.
     if: >
-      github.event_name == 'push' ||
+      github.repository == 'twentyhq/twenty' &&
+      (github.event_name == 'push' ||
       (github.event_name == 'pull_request' &&
-       contains(github.event.pull_request.labels.*.name, 'run-merge-queue'))
-    runs-on: ubuntu-latest-8-cores
+       contains(github.event.pull_request.labels.*.name, 'run-merge-queue')))
+    runs-on: ubuntu-latest
     timeout-minutes: 30
     env:
       NODE_OPTIONS: "--max-old-space-size=10240"
@@ -129,7 +131,8 @@ jobs:
           retention-days: 7
 
   ci-e2e-main-status-check:
-    if: always() && !cancelled()
+    # Fork guard: upstream product E2E, measured flaky here. See FORK-CI.md.
+    if: github.repository == 'twentyhq/twenty' && (always() && !cancelled())
     timeout-minutes: 5
     runs-on: ubuntu-latest
     needs: [e2e-test]
@@ -139,7 +142,8 @@ jobs:
         run: exit 1
 
   notify-main-ci-failure:
-    if: always() && github.event_name == 'push' && contains(needs.*.result, 'failure')
+    # Fork guard: upstream product E2E, measured flaky here. See FORK-CI.md.
+    if: github.repository == 'twentyhq/twenty' && (always() && github.event_name == 'push' && contains(needs.*.result, 'failure'))
     timeout-minutes: 5
     runs-on: ubuntu-latest
     needs: [e2e-test]
