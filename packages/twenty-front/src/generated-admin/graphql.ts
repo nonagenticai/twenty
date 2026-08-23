@@ -311,6 +311,11 @@ export enum HealthIndicatorId {
   worker = 'worker'
 }
 
+export enum IdentityProviderType {
+  OIDC = 'OIDC',
+  SAML = 'SAML'
+}
+
 export type InstanceAndAllWorkspacesUpgradeStatus = {
   __typename?: 'InstanceAndAllWorkspacesUpgradeStatus';
   computedAt: Scalars['DateTime'];
@@ -395,6 +400,7 @@ export type Mutation = {
   addAiProvider: Scalars['Boolean'];
   addModelToProvider: Scalars['Boolean'];
   adminEnsureValidatedApprovedAccessDomain: ApprovedAccessDomain;
+  adminEnsureWorkspaceSSOIdentityProvider: SetupSso;
   adminPromoteWorkspaceMemberToAdmin: Scalars['Boolean'];
   clearMaintenanceMode: Scalars['Boolean'];
   createDatabaseConfigVariable: Scalars['Boolean'];
@@ -432,6 +438,15 @@ export type MutationAddModelToProviderArgs = {
 export type MutationAdminEnsureValidatedApprovedAccessDomainArgs = {
   domain: Scalars['String'];
   email: Scalars['String'];
+  workspaceId: Scalars['UUID'];
+};
+
+
+export type MutationAdminEnsureWorkspaceSsoIdentityProviderArgs = {
+  clientID: Scalars['String'];
+  clientSecret: Scalars['String'];
+  issuer: Scalars['String'];
+  name: Scalars['String'];
   workspaceId: Scalars['UUID'];
 };
 
@@ -716,6 +731,21 @@ export type RetryJobsResponse = {
   __typename?: 'RetryJobsResponse';
   results: Array<JobOperationResult>;
   retriedCount: Scalars['Int'];
+};
+
+export enum SsoIdentityProviderStatus {
+  Active = 'Active',
+  Error = 'Error',
+  Inactive = 'Inactive'
+}
+
+export type SetupSso = {
+  __typename?: 'SetupSso';
+  id: Scalars['UUID'];
+  issuer: Scalars['String'];
+  name: Scalars['String'];
+  status: SsoIdentityProviderStatus;
+  type: IdentityProviderType;
 };
 
 export type SigningKeyDto = {

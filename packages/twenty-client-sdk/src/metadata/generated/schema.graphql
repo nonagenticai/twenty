@@ -1977,6 +1977,14 @@ type ClientConfig {
   maintenance: ClientConfigMaintenanceMode
 }
 
+type SetupSso {
+  id: UUID!
+  type: IdentityProviderType!
+  issuer: String!
+  name: String!
+  status: SSOIdentityProviderStatus!
+}
+
 type UsageBreakdownItem {
   key: String!
   label: String
@@ -2160,14 +2168,6 @@ type FindAvailableSSOIDP {
   name: String!
   status: SSOIdentityProviderStatus!
   workspace: WorkspaceNameAndId!
-}
-
-type SetupSso {
-  id: UUID!
-  type: IdentityProviderType!
-  issuer: String!
-  name: String!
-  status: SSOIdentityProviderStatus!
 }
 
 type SSOConnection {
