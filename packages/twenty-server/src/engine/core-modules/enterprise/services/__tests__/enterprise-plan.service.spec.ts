@@ -316,21 +316,27 @@ describe('EnterprisePlanService', () => {
       expect(service.isValid()).toBe(true);
     });
 
-    it('should return false with unsigned legacy key', async () => {
+    // nonagenticai fork: this fork runs the enterprise gate open. `isValid()`
+    // returns `true` unconditionally (see the fork patch in
+    // enterprise-plan.service.ts, PR #2 "run enterprise gate open on
+    // self-hosted for workspace SSO"), so upstream's `false` expectation for a
+    // missing/unsigned licence does not hold here. The two cases below are kept
+    // to pin that the open gate is not accidentally re-narrowed.
+    it('should return true with unsigned legacy key (fork: gate runs open)', async () => {
       setupEnterpriseKey('some-legacy-key');
       mockCryptoVerify.mockReturnValue(false);
       appTokenFindOneMock.mockResolvedValue(null);
       await service.onModuleInit();
 
-      expect(service.isValid()).toBe(false);
+      expect(service.isValid()).toBe(true);
     });
 
-    it('should return false when no key or token exists', async () => {
+    it('should return true when no key or token exists (fork: gate runs open)', async () => {
       setupEnterpriseKey(undefined);
       appTokenFindOneMock.mockResolvedValue(null);
       await service.onModuleInit();
 
-      expect(service.isValid()).toBe(false);
+      expect(service.isValid()).toBe(true);
     });
   });
 
