@@ -208,6 +208,14 @@ export type ApplicationRegistrationVariableDto = {
   value?: Maybe<Scalars['String']>;
 };
 
+export type ApprovedAccessDomain = {
+  __typename?: 'ApprovedAccessDomain';
+  createdAt: Scalars['DateTime'];
+  domain: Scalars['String'];
+  id: Scalars['UUID'];
+  isValidated: Scalars['Boolean'];
+};
+
 export enum ConfigSource {
   DATABASE = 'DATABASE',
   DEFAULT = 'DEFAULT',
@@ -386,6 +394,8 @@ export type Mutation = {
   __typename?: 'Mutation';
   addAiProvider: Scalars['Boolean'];
   addModelToProvider: Scalars['Boolean'];
+  adminEnsureValidatedApprovedAccessDomain: ApprovedAccessDomain;
+  adminPromoteWorkspaceMemberToAdmin: Scalars['Boolean'];
   clearMaintenanceMode: Scalars['Boolean'];
   createDatabaseConfigVariable: Scalars['Boolean'];
   deleteDatabaseConfigVariable: Scalars['Boolean'];
@@ -416,6 +426,19 @@ export type MutationAddAiProviderArgs = {
 export type MutationAddModelToProviderArgs = {
   modelConfig: Scalars['JSON'];
   providerName: Scalars['String'];
+};
+
+
+export type MutationAdminEnsureValidatedApprovedAccessDomainArgs = {
+  domain: Scalars['String'];
+  email: Scalars['String'];
+  workspaceId: Scalars['UUID'];
+};
+
+
+export type MutationAdminPromoteWorkspaceMemberToAdminArgs = {
+  memberEmail: Scalars['String'];
+  workspaceId: Scalars['UUID'];
 };
 
 

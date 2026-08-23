@@ -91,7 +91,9 @@ describe('AdminPanelService', () => {
         id: 'admin-role-id',
       });
       // assignRoleToManyUserWorkspace internally no-ops when the role is already held.
-      userRoleService.assignRoleToManyUserWorkspace.mockResolvedValue(undefined);
+      userRoleService.assignRoleToManyUserWorkspace.mockResolvedValue(
+        undefined,
+      );
 
       await expect(
         service.adminPromoteWorkspaceMemberToAdmin(workspaceId, memberEmail),
