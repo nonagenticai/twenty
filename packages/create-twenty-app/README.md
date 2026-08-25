@@ -56,5 +56,3 @@ Full documentation is available at **[docs.twenty.com/developers/extend/apps](ht
 
 - See our [GitHub](https://github.com/twentyhq/twenty)
 - Join our [Discord](https://discord.gg/cx5n4Jzs57)
-
-<!-- ci-proof: temporary, reverted before merge -->
