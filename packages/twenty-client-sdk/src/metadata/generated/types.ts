@@ -58,8 +58,8 @@ export default {
         185,
         188,
         191,
-        204,
-        219,
+        205,
+        220,
         231,
         237,
         273,
@@ -959,10 +959,10 @@ export default {
                 3
             ],
             "relation": [
-                203
+                204
             ],
             "morphRelations": [
-                203
+                204
             ],
             "object": [
                 56
@@ -1024,7 +1024,7 @@ export default {
                 46
             ],
             "objectMetadata": [
-                211,
+                212,
                 {
                     "paging": [
                         49,
@@ -1037,7 +1037,7 @@ export default {
                 }
             ],
             "indexFieldMetadatas": [
-                209,
+                210,
                 {
                     "paging": [
                         49,
@@ -1288,7 +1288,7 @@ export default {
                 47
             ],
             "fields": [
-                216,
+                217,
                 {
                     "paging": [
                         49,
@@ -1301,7 +1301,7 @@ export default {
                 }
             ],
             "indexMetadatas": [
-                214,
+                215,
                 {
                     "paging": [
                         49,
@@ -3854,6 +3854,26 @@ export default {
                 1
             ]
         },
+        "SetupSso": {
+            "id": [
+                3
+            ],
+            "type": [
+                177
+            ],
+            "issuer": [
+                1
+            ],
+            "name": [
+                1
+            ],
+            "status": [
+                178
+            ],
+            "__typename": [
+                1
+            ]
+        },
         "UsageBreakdownItem": {
             "key": [
                 1
@@ -3887,7 +3907,7 @@ export default {
                 1
             ],
             "versionDistribution": [
-                198
+                199
             ],
             "__typename": [
                 1
@@ -3934,7 +3954,7 @@ export default {
         },
         "Relation": {
             "type": [
-                204
+                205
             ],
             "sourceObjectMetadata": [
                 56
@@ -3983,10 +4003,10 @@ export default {
         },
         "IndexConnection": {
             "pageInfo": [
-                206
+                207
             ],
             "edges": [
-                205
+                206
             ],
             "__typename": [
                 1
@@ -4005,10 +4025,10 @@ export default {
         },
         "IndexIndexFieldMetadatasConnection": {
             "pageInfo": [
-                206
+                207
             ],
             "edges": [
-                208
+                209
             ],
             "__typename": [
                 1
@@ -4027,10 +4047,10 @@ export default {
         },
         "IndexObjectMetadataConnection": {
             "pageInfo": [
-                206
+                207
             ],
             "edges": [
-                210
+                211
             ],
             "__typename": [
                 1
@@ -4049,10 +4069,10 @@ export default {
         },
         "ObjectConnection": {
             "pageInfo": [
-                206
+                207
             ],
             "edges": [
-                210
+                211
             ],
             "__typename": [
                 1
@@ -4060,10 +4080,10 @@ export default {
         },
         "ObjectIndexMetadatasConnection": {
             "pageInfo": [
-                206
+                207
             ],
             "edges": [
-                205
+                206
             ],
             "__typename": [
                 1
@@ -4082,10 +4102,10 @@ export default {
         },
         "ObjectFieldsConnection": {
             "pageInfo": [
-                206
+                207
             ],
             "edges": [
-                215
+                216
             ],
             "__typename": [
                 1
@@ -4093,10 +4113,10 @@ export default {
         },
         "FieldConnection": {
             "pageInfo": [
-                206
+                207
             ],
             "edges": [
-                215
+                216
             ],
             "__typename": [
                 1
@@ -4104,7 +4124,7 @@ export default {
         },
         "AppConnection": {
             "id": [
-                219
+                220
             ],
             "providerName": [
                 1
@@ -4199,27 +4219,7 @@ export default {
                 178
             ],
             "workspace": [
-                223
-            ],
-            "__typename": [
-                1
-            ]
-        },
-        "SetupSso": {
-            "id": [
-                3
-            ],
-            "type": [
-                177
-            ],
-            "issuer": [
-                1
-            ],
-            "name": [
-                1
-            ],
-            "status": [
-                178
+                224
             ],
             "__typename": [
                 1
@@ -4709,13 +4709,13 @@ export default {
         },
         "UsageAnalytics": {
             "usageByUser": [
-                197
+                198
             ],
             "usageByOperationType": [
-                197
+                198
             ],
             "usageByModel": [
-                197
+                198
             ],
             "timeSeries": [
                 262
@@ -5658,7 +5658,7 @@ export default {
         },
         "AgentChatThread": {
             "id": [
-                219
+                220
             ],
             "title": [
                 1
@@ -6236,7 +6236,7 @@ export default {
                 }
             ],
             "objectRecordCounts": [
-                212
+                213
             ],
             "object": [
                 56,
@@ -6248,7 +6248,7 @@ export default {
                 }
             ],
             "objects": [
-                213,
+                214,
                 {
                     "paging": [
                         49,
@@ -6270,7 +6270,7 @@ export default {
                 }
             ],
             "indexMetadatas": [
-                207,
+                208,
                 {
                     "paging": [
                         49,
@@ -6366,7 +6366,7 @@ export default {
                 }
             ],
             "fields": [
-                217,
+                218,
                 {
                     "paging": [
                         49,
@@ -6413,7 +6413,7 @@ export default {
                 29
             ],
             "findApplicationRegistrationByClientId": [
-                201,
+                202,
                 {
                     "clientId": [
                         1,
@@ -6443,7 +6443,7 @@ export default {
                 }
             ],
             "findApplicationRegistrationStats": [
-                199,
+                200,
                 {
                     "id": [
                         1,
@@ -6542,7 +6542,7 @@ export default {
                 337
             ],
             "appConnections": [
-                218,
+                219,
                 {
                     "filter": [
                         343
@@ -6550,10 +6550,10 @@ export default {
                 }
             ],
             "appConnection": [
-                218,
+                219,
                 {
                     "id": [
-                        219,
+                        220,
                         "ID!"
                     ]
                 }
@@ -6670,7 +6670,7 @@ export default {
                 79
             ],
             "getSSOIdentityProviders": [
-                224
+                225
             ],
             "eventLogs": [
                 314,
@@ -6794,7 +6794,7 @@ export default {
         },
         "LogicFunctionIdInput": {
             "id": [
-                219
+                220
             ],
             "__typename": [
                 1
@@ -8061,7 +8061,7 @@ export default {
                 }
             ],
             "createApplicationRegistration": [
-                200,
+                201,
                 {
                     "input": [
                         454,
@@ -8088,7 +8088,7 @@ export default {
                 }
             ],
             "rotateApplicationRegistrationClientSecret": [
-                202,
+                203,
                 {
                     "id": [
                         1,
@@ -8817,7 +8817,7 @@ export default {
                 }
             ],
             "resendEmailVerificationToken": [
-                220,
+                221,
                 {
                     "email": [
                         1,
@@ -8830,7 +8830,7 @@ export default {
                 }
             ],
             "createOIDCIdentityProvider": [
-                225,
+                197,
                 {
                     "input": [
                         483,
@@ -8839,7 +8839,7 @@ export default {
                 }
             ],
             "createSAMLIdentityProvider": [
-                225,
+                197,
                 {
                     "input": [
                         484,
@@ -8848,7 +8848,7 @@ export default {
                 }
             ],
             "deleteSSOIdentityProvider": [
-                221,
+                222,
                 {
                     "input": [
                         485,
@@ -8857,7 +8857,7 @@ export default {
                 }
             ],
             "editSSOIdentityProvider": [
-                222,
+                223,
                 {
                     "input": [
                         486,

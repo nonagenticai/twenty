@@ -222,6 +222,14 @@ export type ApplicationRegistrationVariableDto = {
   value?: Maybe<Scalars['String']['output']>;
 };
 
+export type ApprovedAccessDomain = {
+  __typename?: 'ApprovedAccessDomain';
+  createdAt: Scalars['DateTime']['output'];
+  domain: Scalars['String']['output'];
+  id: Scalars['UUID']['output'];
+  isValidated: Scalars['Boolean']['output'];
+};
+
 export enum ConfigSource {
   DATABASE = 'DATABASE',
   DEFAULT = 'DEFAULT',
@@ -316,6 +324,11 @@ export enum HealthIndicatorId {
   worker = 'worker'
 }
 
+export enum IdentityProviderType {
+  OIDC = 'OIDC',
+  SAML = 'SAML'
+}
+
 export type InstanceAndAllWorkspacesUpgradeStatus = {
   __typename?: 'InstanceAndAllWorkspacesUpgradeStatus';
   computedAt: Scalars['DateTime']['output'];
@@ -399,6 +412,9 @@ export type Mutation = {
   __typename?: 'Mutation';
   addAiProvider: Scalars['Boolean']['output'];
   addModelToProvider: Scalars['Boolean']['output'];
+  adminEnsureValidatedApprovedAccessDomain: ApprovedAccessDomain;
+  adminEnsureWorkspaceSSOIdentityProvider: SetupSso;
+  adminPromoteWorkspaceMemberToAdmin: Scalars['Boolean']['output'];
   backfillApplicationInstallation: Scalars['Boolean']['output'];
   clearMaintenanceMode: Scalars['Boolean']['output'];
   createDatabaseConfigVariable: Scalars['Boolean']['output'];
@@ -433,6 +449,28 @@ export type MutationAddAiProviderArgs = {
 export type MutationAddModelToProviderArgs = {
   modelConfig: Scalars['JSON']['input'];
   providerName: Scalars['String']['input'];
+};
+
+
+export type MutationAdminEnsureValidatedApprovedAccessDomainArgs = {
+  domain: Scalars['String']['input'];
+  email: Scalars['String']['input'];
+  workspaceId: Scalars['UUID']['input'];
+};
+
+
+export type MutationAdminEnsureWorkspaceSsoIdentityProviderArgs = {
+  clientID: Scalars['String']['input'];
+  clientSecret: Scalars['String']['input'];
+  issuer: Scalars['String']['input'];
+  name: Scalars['String']['input'];
+  workspaceId: Scalars['UUID']['input'];
+};
+
+
+export type MutationAdminPromoteWorkspaceMemberToAdminArgs = {
+  memberEmail: Scalars['String']['input'];
+  workspaceId: Scalars['UUID']['input'];
 };
 
 
@@ -731,6 +769,12 @@ export type RetryJobsResponse = {
   retriedCount: Scalars['Int']['output'];
 };
 
+export enum SsoIdentityProviderStatus {
+  Active = 'Active',
+  Error = 'Error',
+  Inactive = 'Inactive'
+}
+
 export type ServerAdmin = {
   __typename?: 'ServerAdmin';
   canAccessFullAdminPanel: Scalars['Boolean']['output'];
@@ -739,6 +783,15 @@ export type ServerAdmin = {
   firstName: Scalars['String']['output'];
   id: Scalars['UUID']['output'];
   lastName: Scalars['String']['output'];
+};
+
+export type SetupSso = {
+  __typename?: 'SetupSso';
+  id: Scalars['UUID']['output'];
+  issuer: Scalars['String']['output'];
+  name: Scalars['String']['output'];
+  status: SsoIdentityProviderStatus;
+  type: IdentityProviderType;
 };
 
 export type SigningKeyDto = {
