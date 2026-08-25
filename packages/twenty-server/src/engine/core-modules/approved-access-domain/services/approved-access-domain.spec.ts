@@ -63,6 +63,7 @@ describe('ApprovedAccessDomainService', () => {
           useValue: {
             findOneBy: jest.fn(),
             find: jest.fn(),
+            save: jest.fn(),
           },
         },
         {
@@ -581,6 +582,101 @@ describe('ApprovedAccessDomainService', () => {
           ApprovedAccessDomainExceptionCode.APPROVED_ACCESS_DOMAIN_ALREADY_VALIDATED,
         ),
       );
+    });
+  });
+
+  describe('adminEnsureValidatedApprovedAccessDomain', () => {
+    const workspaceId = 'workspace-id';
+    const domain = 'acme.com';
+    const email = 'admin@acme.com';
+
+    it('should validate an existing unvalidated domain', async () => {
+      const existing = {
+        id: 'aad-id',
+        workspaceId,
+        domain,
+        isValidated: false,
+      } as ApprovedAccessDomainEntity;
+      const saved = {
+        ...existing,
+        isValidated: true,
+      } as ApprovedAccessDomainEntity;
+
+      jest
+        .spyOn(approvedAccessDomainRepositoryUnscoped, 'findOneBy')
+        .mockResolvedValue(existing);
+      jest
+        .spyOn(approvedAccessDomainRepositoryUnscoped, 'save')
+        .mockResolvedValue(saved);
+
+      const result = await service.adminEnsureValidatedApprovedAccessDomain(
+        workspaceId,
+        domain,
+        email,
+      );
+
+      expect(
+        approvedAccessDomainRepositoryUnscoped.findOneBy,
+      ).toHaveBeenCalledWith({ workspaceId, domain });
+      expect(
+        approvedAccessDomainRepositoryUnscoped.save,
+      ).toHaveBeenCalledWith(
+        expect.objectContaining({ id: 'aad-id', isValidated: true }),
+      );
+      expect(result).toEqual(saved);
+    });
+
+    it('should return an already-validated domain unchanged without saving', async () => {
+      const existing = {
+        id: 'aad-id',
+        workspaceId,
+        domain,
+        isValidated: true,
+      } as ApprovedAccessDomainEntity;
+
+      jest
+        .spyOn(approvedAccessDomainRepositoryUnscoped, 'findOneBy')
+        .mockResolvedValue(existing);
+      const saveSpy = jest.spyOn(
+        approvedAccessDomainRepositoryUnscoped,
+        'save',
+      );
+
+      const result = await service.adminEnsureValidatedApprovedAccessDomain(
+        workspaceId,
+        domain,
+        email,
+      );
+
+      expect(result).toBe(existing);
+      expect(saveSpy).not.toHaveBeenCalled();
+    });
+
+    it('should insert a new validated domain when none exists', async () => {
+      const saved = {
+        id: 'new-id',
+        workspaceId,
+        domain,
+        isValidated: true,
+      } as ApprovedAccessDomainEntity;
+
+      jest
+        .spyOn(approvedAccessDomainRepositoryUnscoped, 'findOneBy')
+        .mockResolvedValue(null);
+      jest
+        .spyOn(approvedAccessDomainRepositoryUnscoped, 'save')
+        .mockResolvedValue(saved);
+
+      const result = await service.adminEnsureValidatedApprovedAccessDomain(
+        workspaceId,
+        domain,
+        email,
+      );
+
+      expect(
+        approvedAccessDomainRepositoryUnscoped.save,
+      ).toHaveBeenCalledWith({ workspaceId, domain, isValidated: true });
+      expect(result).toEqual(saved);
     });
   });
 });
