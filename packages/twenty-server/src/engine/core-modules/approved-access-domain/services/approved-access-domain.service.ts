@@ -308,12 +308,11 @@ export class ApprovedAccessDomainService {
     domain: string,
     _email: string,
   ): Promise<ApprovedAccessDomainEntity> {
-    const existing = await this.approvedAccessDomainRepositoryUnscoped.findOneBy(
-      {
+    const existing =
+      await this.approvedAccessDomainRepositoryUnscoped.findOneBy({
         workspaceId,
         domain,
-      },
-    );
+      });
 
     if (isDefined(existing)) {
       if (existing.isValidated) {

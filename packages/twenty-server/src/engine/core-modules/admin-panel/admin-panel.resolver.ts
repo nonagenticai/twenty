@@ -270,12 +270,15 @@ export class AdminPanelResolver {
     @Args('clientSecret') clientSecret: string,
     @Args('name') name: string,
   ): Promise<SetupSsoDTO> {
-    return this.ssoService.adminEnsureWorkspaceSSOIdentityProvider(workspaceId, {
-      issuer,
-      clientID,
-      clientSecret,
-      name,
-    });
+    return this.ssoService.adminEnsureWorkspaceSSOIdentityProvider(
+      workspaceId,
+      {
+        issuer,
+        clientID,
+        clientSecret,
+        name,
+      },
+    );
   }
 
   @UseGuards(AdminPanelGuard)

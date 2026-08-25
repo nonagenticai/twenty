@@ -618,9 +618,7 @@ describe('ApprovedAccessDomainService', () => {
       expect(
         approvedAccessDomainRepositoryUnscoped.findOneBy,
       ).toHaveBeenCalledWith({ workspaceId, domain });
-      expect(
-        approvedAccessDomainRepositoryUnscoped.save,
-      ).toHaveBeenCalledWith(
+      expect(approvedAccessDomainRepositoryUnscoped.save).toHaveBeenCalledWith(
         expect.objectContaining({ id: 'aad-id', isValidated: true }),
       );
       expect(result).toEqual(saved);
@@ -673,9 +671,11 @@ describe('ApprovedAccessDomainService', () => {
         email,
       );
 
-      expect(
-        approvedAccessDomainRepositoryUnscoped.save,
-      ).toHaveBeenCalledWith({ workspaceId, domain, isValidated: true });
+      expect(approvedAccessDomainRepositoryUnscoped.save).toHaveBeenCalledWith({
+        workspaceId,
+        domain,
+        isValidated: true,
+      });
       expect(result).toEqual(saved);
     });
   });
