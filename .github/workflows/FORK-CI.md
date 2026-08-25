@@ -61,13 +61,22 @@ re-enables it.
 - **`ci-blocked-contributors.yaml`** — see below. It is a legitimate repo rule that works exactly
   as intended. Guarding it would be gaming the check. We comply instead.
 
-## Runner SKU: `ubuntu-latest`, never `ubuntu-latest-8-cores`
+## Runner SKU: `ubuntu-latest`, never ANY `ubuntu-latest-N-cores`
 
 Upstream requests the larger-runner SKU `ubuntu-latest-8-cores` (`ci-e2e-main.yaml`,
 `ci-front.yaml`). That SKU is **not available to this org**: those jobs were created, never picked
 up by any runner, and cancelled by GitHub after exactly 24h with `steps: []`. After switching to
 `ubuntu-latest` the same jobs claimed a runner within seconds. Keep `ubuntu-latest`; widen it only
-if the org is granted larger runners. The two `STORYBOOK_BUILD_CACHE_KEY_*` env strings in
+if the org is granted larger runners. 
+
+⚠️ **This rule is about the SKU FAMILY, not one label.** It originally named only
+`ubuntu-latest-8-cores`, and `ci-create-app-e2e-minimal.yaml` kept `ubuntu-latest-4-cores`
+for months as a result. Measured 2026-08-25: that job had **never once executed** in this
+fork — its path filter usually skipped it, and on the two occasions it was selected
+(`feat/admin-panel-provisioning-mutations` 10:36Z, `main` 11:41Z) it sat `queued` with
+`steps: []` for hours. Worse, `ci-create-app-e2e-minimal-status-check` reported **success**
+on the skip, so the gate was green while the E2E had never run. Grep for
+`ubuntu-latest-[0-9]*-cores`, not for a specific width. The two `STORYBOOK_BUILD_CACHE_KEY_*` env strings in
 `ci-front.yaml` embed the runner name and were renamed to match (cache-key rename only).
 
 ## No AI-bot attribution in commits
