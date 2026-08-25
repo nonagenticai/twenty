@@ -1600,6 +1600,15 @@ export interface ClientConfig {
     __typename: 'ClientConfig'
 }
 
+export interface SetupSso {
+    id: Scalars['UUID']
+    type: IdentityProviderType
+    issuer: Scalars['String']
+    name: Scalars['String']
+    status: SSOIdentityProviderStatus
+    __typename: 'SetupSso'
+}
+
 export interface UsageBreakdownItem {
     key: Scalars['String']
     label?: Scalars['String']
@@ -1805,15 +1814,6 @@ export interface FindAvailableSSOIDP {
     status: SSOIdentityProviderStatus
     workspace: WorkspaceNameAndId
     __typename: 'FindAvailableSSOIDP'
-}
-
-export interface SetupSso {
-    id: Scalars['UUID']
-    type: IdentityProviderType
-    issuer: Scalars['String']
-    name: Scalars['String']
-    status: SSOIdentityProviderStatus
-    __typename: 'SetupSso'
 }
 
 export interface SSOConnection {
@@ -4672,6 +4672,16 @@ export interface ClientConfigGenqlSelection{
     __scalar?: boolean | number
 }
 
+export interface SetupSsoGenqlSelection{
+    id?: boolean | number
+    type?: boolean | number
+    issuer?: boolean | number
+    name?: boolean | number
+    status?: boolean | number
+    __typename?: boolean | number
+    __scalar?: boolean | number
+}
+
 export interface UsageBreakdownItemGenqlSelection{
     key?: boolean | number
     label?: boolean | number
@@ -4897,16 +4907,6 @@ export interface FindAvailableSSOIDPGenqlSelection{
     name?: boolean | number
     status?: boolean | number
     workspace?: WorkspaceNameAndIdGenqlSelection
-    __typename?: boolean | number
-    __scalar?: boolean | number
-}
-
-export interface SetupSsoGenqlSelection{
-    id?: boolean | number
-    type?: boolean | number
-    issuer?: boolean | number
-    name?: boolean | number
-    status?: boolean | number
     __typename?: boolean | number
     __scalar?: boolean | number
 }
@@ -7651,6 +7651,14 @@ export interface LogicFunctionLogsInput {applicationId?: (Scalars['UUID'] | null
     
 
 
+    const SetupSso_possibleTypes: string[] = ['SetupSso']
+    export const isSetupSso = (obj?: { __typename?: any } | null): obj is SetupSso => {
+      if (!obj?.__typename) throw new Error('__typename is missing in "isSetupSso"')
+      return SetupSso_possibleTypes.includes(obj.__typename)
+    }
+    
+
+
     const UsageBreakdownItem_possibleTypes: string[] = ['UsageBreakdownItem']
     export const isUsageBreakdownItem = (obj?: { __typename?: any } | null): obj is UsageBreakdownItem => {
       if (!obj?.__typename) throw new Error('__typename is missing in "isUsageBreakdownItem"')
@@ -7855,14 +7863,6 @@ export interface LogicFunctionLogsInput {applicationId?: (Scalars['UUID'] | null
     export const isFindAvailableSSOIDP = (obj?: { __typename?: any } | null): obj is FindAvailableSSOIDP => {
       if (!obj?.__typename) throw new Error('__typename is missing in "isFindAvailableSSOIDP"')
       return FindAvailableSSOIDP_possibleTypes.includes(obj.__typename)
-    }
-    
-
-
-    const SetupSso_possibleTypes: string[] = ['SetupSso']
-    export const isSetupSso = (obj?: { __typename?: any } | null): obj is SetupSso => {
-      if (!obj?.__typename) throw new Error('__typename is missing in "isSetupSso"')
-      return SetupSso_possibleTypes.includes(obj.__typename)
     }
     
 

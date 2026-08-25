@@ -15,6 +15,7 @@ import { UpgradeStatusService } from 'src/engine/core-modules/upgrade/services/u
 import { AdminResolver } from 'src/engine/api/graphql/graphql-config/decorators/admin-resolver.decorator';
 import { AdminPanelHealthService } from 'src/engine/core-modules/admin-panel/admin-panel-health.service';
 import { AdminPanelQueueService } from 'src/engine/core-modules/admin-panel/admin-panel-queue.service';
+import { AdminPanelService } from 'src/engine/core-modules/admin-panel/admin-panel.service';
 import { AdminChatThreadMessagesDTO } from 'src/engine/core-modules/admin-panel/dtos/admin-chat-thread-messages.dto';
 import { AdminPanelRecentUserDTO } from 'src/engine/core-modules/admin-panel/dtos/admin-panel-recent-user.dto';
 import { AdminPanelTopWorkspaceDTO } from 'src/engine/core-modules/admin-panel/dtos/admin-panel-top-workspace.dto';
@@ -57,6 +58,8 @@ import {
   BACKFILL_APPLICATION_INSTALLATION_JOB_NAME,
   type BackfillApplicationInstallationJobData,
 } from 'src/engine/core-modules/application/jobs/backfill-application-installation.job-constants';
+import { ApprovedAccessDomainDTO } from 'src/engine/core-modules/approved-access-domain/dtos/approved-access-domain.dto';
+import { ApprovedAccessDomainService } from 'src/engine/core-modules/approved-access-domain/services/approved-access-domain.service';
 import { AuthGraphqlApiExceptionFilter } from 'src/engine/core-modules/auth/filters/auth-graphql-api-exception.filter';
 import { type AuthContextUser } from 'src/engine/core-modules/auth/types/auth-context.type';
 import { AdminAiModelsDTO } from 'src/engine/core-modules/client-config/client-config.entity';
@@ -69,6 +72,8 @@ import { MarketplaceCatalogSyncCronJob } from 'src/engine/core-modules/applicati
 import { InjectMessageQueue } from 'src/engine/core-modules/message-queue/decorators/message-queue.decorator';
 import { MessageQueue } from 'src/engine/core-modules/message-queue/message-queue.constants';
 import { MessageQueueService } from 'src/engine/core-modules/message-queue/services/message-queue.service';
+import { SetupSsoDTO } from 'src/engine/core-modules/sso/dtos/setup-sso.dto';
+import { SSOService } from 'src/engine/core-modules/sso/services/sso.service';
 import { type ConfigVariables } from 'src/engine/core-modules/twenty-config/config-variables';
 import { ConfigVariableGraphqlApiExceptionFilter } from 'src/engine/core-modules/twenty-config/filters/config-variable-graphql-api-exception.filter';
 import { TwentyConfigService } from 'src/engine/core-modules/twenty-config/twenty-config.service';
@@ -138,6 +143,9 @@ export class AdminPanelResolver {
     private readonly usageAnalyticsService: UsageAnalyticsService,
     private readonly maintenanceModeService: MaintenanceModeService,
     private readonly upgradeStatusService: UpgradeStatusService,
+    private readonly adminPanelService: AdminPanelService,
+    private readonly approvedAccessDomainService: ApprovedAccessDomainService,
+    private readonly ssoService: SSOService,
     @InjectRepository(WorkspaceEntity)
     private readonly workspaceRepository: Repository<WorkspaceEntity>,
     @InjectMessageQueue(MessageQueue.cronQueue)
@@ -225,6 +233,52 @@ export class AdminPanelResolver {
 
       throw error;
     }
+  }
+
+  @UseGuards(AdminPanelGuard)
+  @Mutation(() => ApprovedAccessDomainDTO)
+  async adminEnsureValidatedApprovedAccessDomain(
+    @Args('workspaceId', { type: () => UUIDScalarType }) workspaceId: string,
+    @Args('domain', { type: () => String }) domain: string,
+    @Args('email', { type: () => String }) email: string,
+  ): Promise<ApprovedAccessDomainDTO> {
+    return this.approvedAccessDomainService.adminEnsureValidatedApprovedAccessDomain(
+      workspaceId,
+      domain,
+      email,
+    );
+  }
+
+  @UseGuards(AdminPanelGuard)
+  @Mutation(() => Boolean)
+  async adminPromoteWorkspaceMemberToAdmin(
+    @Args('workspaceId', { type: () => UUIDScalarType }) workspaceId: string,
+    @Args('memberEmail', { type: () => String }) memberEmail: string,
+  ): Promise<boolean> {
+    return this.adminPanelService.adminPromoteWorkspaceMemberToAdmin(
+      workspaceId,
+      memberEmail,
+    );
+  }
+
+  @UseGuards(AdminPanelGuard)
+  @Mutation(() => SetupSsoDTO)
+  async adminEnsureWorkspaceSSOIdentityProvider(
+    @Args('workspaceId', { type: () => UUIDScalarType }) workspaceId: string,
+    @Args('issuer') issuer: string,
+    @Args('clientID') clientID: string,
+    @Args('clientSecret') clientSecret: string,
+    @Args('name') name: string,
+  ): Promise<SetupSsoDTO> {
+    return this.ssoService.adminEnsureWorkspaceSSOIdentityProvider(
+      workspaceId,
+      {
+        issuer,
+        clientID,
+        clientSecret,
+        name,
+      },
+    );
   }
 
   @UseGuards(AdminPanelGuard)
