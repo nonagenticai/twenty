@@ -7,6 +7,9 @@ import { getLocalDepsLayerPath } from 'src/engine/core-modules/logic-function/lo
 import { getLocalSdkLayerPath } from 'src/engine/core-modules/logic-function/logic-function-drivers/drivers/local/utils/get-local-sdk-layer-path.util';
 import { HANDLER_NAME_REGEX } from 'src/engine/metadata-modules/logic-function/constants/handler.contant';
 
+export const LOGIC_FUNCTION_RESULT_NOT_DELIVERED =
+  'LOGIC_FUNCTION_RESULT_NOT_DELIVERED';
+
 export class LocalChildProcessRunnerService {
   // Symlinks everything from the deps layer except twenty-client-sdk,
   // which comes from the SDK layer (workspace-specific generated client).
@@ -93,11 +96,16 @@ export class LocalChildProcessRunnerService {
               if (!msg || msg.type !== 'run') return;
               try {
                 const out = await handlerFn(msg.payload);
-                process.send && process.send({ ok: true, result: out });
-                process.exit(0);
+                // process.send() is asynchronous: exit only once the message
+                // has been flushed, otherwise a result larger than the OS pipe
+                // buffer is dropped and the parent sees a bare exit 0.
+                process.send({ ok: true, result: out }, (sendErr) =>
+                  process.exit(sendErr ? 1 : 0),
+                );
               } catch (err) {
-                process.send && process.send({ ok: false, error: String(err), stack: err?.stack });
-                process.exit(1);
+                process.send({ ok: false, error: String(err), stack: err?.stack }, () =>
+                  process.exit(1),
+                );
               }
             });
           } else {
@@ -105,17 +113,19 @@ export class LocalChildProcessRunnerService {
             const json = process.argv[2];
             payload = json ? JSON.parse(json) : undefined;
             const out = await handlerFn(payload);
-            process.stdout.write(JSON.stringify({ ok: true, result: out }));
-            process.exit(0);
+            process.stdout.write(JSON.stringify({ ok: true, result: out }), () =>
+              process.exit(0),
+            );
           }
         } catch (err) {
           const msg = String(err);
           if (process.send) {
-            process.send({ ok: false, error: msg, stack: err?.stack });
+            process.send({ ok: false, error: msg, stack: err?.stack }, () =>
+              process.exit(1),
+            );
           } else {
-            process.stdout.write(msg);
+            process.stdout.write(msg, () => process.exit(1));
           }
-          process.exit(1);
         }
       })();
     `;
@@ -136,6 +146,7 @@ export class LocalChildProcessRunnerService {
     return new Promise<{
       ok: boolean;
       result?: unknown;
+      errorType?: string;
       error?: string;
       stack?: string;
       stdout: string;
@@ -181,15 +192,30 @@ export class LocalChildProcessRunnerService {
         },
       );
 
-      child.on('exit', (code) => {
+      // Settle the no-message case on 'close', not 'exit': 'close' fires only
+      // after the child has exited AND its stdio and IPC channel have closed,
+      // so every message the child flushed has been delivered by then. 'exit'
+      // can race ahead of an in-flight message.
+      child.on('close', (code, signal) => {
         if (settled) return;
         settled = true;
         if (code === 0) {
-          resolve({ ok: true, stdout, stderr });
+          // A clean exit without a result message means the result was lost
+          // (e.g. truncated IPC write). Never report that as an empty success.
+          resolve({
+            ok: false,
+            errorType: LOGIC_FUNCTION_RESULT_NOT_DELIVERED,
+            error: `${LOGIC_FUNCTION_RESULT_NOT_DELIVERED}: the logic function process exited with code 0 without delivering a result`,
+            stdout,
+            stderr,
+          });
         } else {
           resolve({
             ok: false,
-            error: `Exited with code ${code}`,
+            error:
+              code === null
+                ? `Exited with signal ${signal}`
+                : `Exited with code ${code}`,
             stdout,
             stderr,
           });
