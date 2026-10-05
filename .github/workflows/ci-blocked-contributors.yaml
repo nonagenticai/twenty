@@ -10,6 +10,9 @@ permissions:
 
 jobs:
   check-blocked-contributors:
+    # Upstream-only policy (twentyhq's contributor blocklist). On a fork it
+    # rejects the fork's own commits, so it must not run outside twentyhq.
+    if: github.repository_owner == 'twentyhq'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
